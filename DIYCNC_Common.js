@@ -18,7 +18,9 @@ properties = {
 
   jobSetOriginOnStart: true,           // Set origin when gcode start (G92)
   jobGoOriginOnFinish: true,           // Go X0 Y0 Z0 at gcode end
-
+  jobRaiseZOnFinishBeforeXY: true,	   // Raise Z first
+  jobRaiseZOnFinishHeight: 40,		     // How high should Z go before moving XY
+  
   jobSequenceNumbers: false,           // show sequence numbers
   jobSequenceNumberStart: 10,          // first sequence number
   jobSequenceNumberIncrement: 1,       // increment for sequence numbers
@@ -98,7 +100,15 @@ propertyDefinitions = {
     title: "Job: Goto 0 at end", description: "Go X0 Y0 at gcode end", group: 1,
     type: "boolean", default_mm: true, default_in: true
   },
-
+  jobRaiseZOnFinishBeforeXY: {
+    title: "Job: Raise Z on Finish", description: "Raise Z before Moving XY on Finish", group: 1,
+    type: "boolean", default_mm: true, default_in: true
+  },
+    jobRaiseZOnFinishHeight: {
+    title: "Job: Raise Z on Finish Height", description: "Raise Z how high before Moving XY on Finish", group: 1,
+    type: "boolean", default_mm: true, default_in: true
+  },
+  
   jobSequenceNumbers: {
     title: "Job: Line numbers", description: "Show sequence numbers", group: 1,
     type: "boolean", default_mm: true, default_in: true
@@ -396,7 +406,10 @@ function onClose() {
   if (properties.gcodeStopFile == "") {
     onCommand(COMMAND_COOLANT_OFF);
     if (properties.jobGoOriginOnFinish) {
-      rapidMovementsXY(0, 0);
+      if (properties.jobRaiseZOnFinishBeforeXY) {
+         rapidMovementsZ(properties.jobRaiseZOnFinishHeight);
+      }
+      rapidMovementsXY(0, 0);      
     }
     onCommand(COMMAND_STOP_SPINDLE);
     currentFirmware.end();
